@@ -35,54 +35,87 @@ class FreshRSS_EntryDAO extends Minz_ModelPdo {
 		return [];
 
 	// checking for duplicates
-	public function findDuplicateEntries(int $feedId): array {
-		$sql = <<<'SQL'
+		public function findDuplicateEntries(int $feedId): array {
+			$sql = <<<'SQL'
 		SELECT id, title, url, MD5(content) AS content_hash, COUNT(*) as duplicates
 		FROM `_entry`
 		WHERE id_feed = :feedId
 		GROUP BY url, title, content_hash
 		HAVING duplicates > 1;
 	SQL;
-	
-		$stm = $this->pdo->prepare($sql);
-		$stm->bindParam(':feedId', $feedId, PDO::PARAM_INT);
-	
-		if ($stm->execute()) {
-			return $stm->fetchAll(PDO::FETCH_ASSOC);
-		} else {
-			Minz_Log::error('SQL error ' . __METHOD__ . json_encode($stm->errorInfo()));
-			return [];
-		}
-	}
 
-	// consolidating duplicates
-	public function consolidateDuplicates(int $feedId): bool {
-		$duplicates = $this->findDuplicateEntries($feedId);
-	
-		foreach ($duplicates as $duplicate) {
-			$sql = <<<'SQL'
-			DELETE FROM `_entry`
-			WHERE id_feed = :feedId AND url = :url AND id != (
-				SELECT MIN(id)
-				FROM `_entry`
-				WHERE id_feed = :feedId AND url = :url
-			);
-	SQL;
-	
 			$stm = $this->pdo->prepare($sql);
 			$stm->bindParam(':feedId', $feedId, PDO::PARAM_INT);
-			$stm->bindParam(':url', $duplicate['url'], PDO::PARAM_STR);
-	
-			if (!$stm->execute()) {
+
+			if ($stm->execute()) {
+				return $stm->fetchAll(PDO::FETCH_ASSOC);
+			} else {
 				Minz_Log::error('SQL error ' . __METHOD__ . json_encode($stm->errorInfo()));
-				return false;
+				return [];
 			}
 		}
-	
-		return true;
-	}	
-	}
+    /**
+     * Find duplicate entries based on feed ID.
+     */
+    public function findDuplicateEntries(int $feedId): array {
+        try {
+            $sql = <<<SQL
+            SELECT id, title, url, MD5(content) AS content_hash, COUNT(*) as duplicates
+            FROM `_entry`
+            WHERE id_feed = :feedId
+            GROUP BY url, title, content_hash
+            HAVING duplicates > 1;
+            SQL;
 
+            $stm = $this->pdo->prepare($sql);
+            $stm->bindParam(':feedId', $feedId, PDO::PARAM_INT);
+
+            if ($stm->execute()) {
+                return $stm->fetchAll(PDO::FETCH_ASSOC);
+            } else {
+                Minz_Log::error('SQL error in ' . __METHOD__ . ': ' . json_encode($stm->errorInfo()));
+                return [];
+            }
+        } catch (PDOException $e) {
+            Minz_Log::error('PDOException in ' . __METHOD__ . ': ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Consolidate duplicate entries by keeping the first occurrence.
+     */
+    public function consolidateDuplicates(int $feedId): bool {
+        try {
+            $duplicates = $this->findDuplicateEntries($feedId);
+
+            foreach ($duplicates as $duplicate) {
+                $sql = <<<SQL
+                DELETE FROM `_entry`
+                WHERE id_feed = :feedId AND url = :url AND id != (
+                    SELECT MIN(id)
+                    FROM `_entry`
+                    WHERE id_feed = :feedId AND url = :url
+                );
+                SQL;
+
+                $stm = $this->pdo->prepare($sql);
+                $stm->bindParam(':feedId', $feedId, PDO::PARAM_INT);
+                $stm->bindParam(':url', $duplicate['url'], PDO::PARAM_STR);
+
+                if (!$stm->execute()) {
+                    Minz_Log::error('SQL error in ' . __METHOD__ . ': ' . json_encode($stm->errorInfo()));
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (PDOException $e) {
+            Minz_Log::error('PDOException in ' . __METHOD__ . ': ' . $e->getMessage());
+            return false;
+        }
+    }
+}
 	/** @param array<int|string> $values */
 	protected static function sqlRegex(string $expression, string $regex, array &$values): string {
 		// The implementation of this function is solely for MySQL and MariaDB
