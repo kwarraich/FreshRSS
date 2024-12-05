@@ -54,6 +54,33 @@ class FreshRSS_EntryDAO extends Minz_ModelPdo {
 			return [];
 		}
 	}
+
+	// consolidating duplicates
+	public function consolidateDuplicates(int $feedId): bool {
+		$duplicates = $this->findDuplicateEntries($feedId);
+	
+		foreach ($duplicates as $duplicate) {
+			$sql = <<<'SQL'
+			DELETE FROM `_entry`
+			WHERE id_feed = :feedId AND url = :url AND id != (
+				SELECT MIN(id)
+				FROM `_entry`
+				WHERE id_feed = :feedId AND url = :url
+			);
+	SQL;
+	
+			$stm = $this->pdo->prepare($sql);
+			$stm->bindParam(':feedId', $feedId, PDO::PARAM_INT);
+			$stm->bindParam(':url', $duplicate['url'], PDO::PARAM_STR);
+	
+			if (!$stm->execute()) {
+				Minz_Log::error('SQL error ' . __METHOD__ . json_encode($stm->errorInfo()));
+				return false;
+			}
+		}
+	
+		return true;
+	}	
 	}
 
 	/** @param array<int|string> $values */
