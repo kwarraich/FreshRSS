@@ -33,6 +33,27 @@ class FreshRSS_EntryDAO extends Minz_ModelPdo {
 			return $matches;
 		}
 		return [];
+
+	// checking for duplicates
+	public function findDuplicateEntries(int $feedId): array {
+		$sql = <<<'SQL'
+		SELECT id, title, url, MD5(content) AS content_hash, COUNT(*) as duplicates
+		FROM `_entry`
+		WHERE id_feed = :feedId
+		GROUP BY url, title, content_hash
+		HAVING duplicates > 1;
+	SQL;
+	
+		$stm = $this->pdo->prepare($sql);
+		$stm->bindParam(':feedId', $feedId, PDO::PARAM_INT);
+	
+		if ($stm->execute()) {
+			return $stm->fetchAll(PDO::FETCH_ASSOC);
+		} else {
+			Minz_Log::error('SQL error ' . __METHOD__ . json_encode($stm->errorInfo()));
+			return [];
+		}
+	}
 	}
 
 	/** @param array<int|string> $values */
