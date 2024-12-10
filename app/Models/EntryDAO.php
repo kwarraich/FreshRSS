@@ -3,57 +3,38 @@ declare(strict_types=1);
 
 class FreshRSS_EntryDAO extends Minz_ModelPdo {
 
-	public static function isCompressed(): bool {
-		return true;
-	}
+    public static function isCompressed(): bool {
+        return true;
+    }
 
-	public static function hasNativeHex(): bool {
-		return true;
-	}
+    public static function hasNativeHex(): bool {
+        return true;
+    }
 
-	protected static function sqlConcat(string $s1, string $s2): string {
-		return 'CONCAT(' . $s1 . ',' . $s2 . ')';	//MySQL
-	}
+    protected static function sqlConcat(string $s1, string $s2): string {
+        return 'CONCAT(' . $s1 . ',' . $s2 . ')'; // MySQL
+    }
 
-	public static function sqlHexDecode(string $x): string {
-		return 'unhex(' . $x . ')';
-	}
+    public static function sqlHexDecode(string $x): string {
+        return 'unhex(' . $x . ')';
+    }
 
-	public static function sqlHexEncode(string $x): string {
-		return 'hex(' . $x . ')';
-	}
+    public static function sqlHexEncode(string $x): string {
+        return 'hex(' . $x . ')';
+    }
 
-	public static function sqlIgnoreConflict(string $sql): string {
-		return str_replace('INSERT INTO ', 'INSERT IGNORE INTO ', $sql);
-	}
+    public static function sqlIgnoreConflict(string $sql): string {
+        return str_replace('INSERT INTO ', 'INSERT IGNORE INTO ', $sql);
+    }
 
-	/** @return array{pattern?:string,matchType?:string} */
-	protected static function regexToSql(string $regex): array {
-		if (preg_match('#^/(?P<pattern>.*)/(?P<matchType>[im]*)$#', $regex, $matches)) {
-			return $matches;
-		}
-		return [];
+    /** @return array{pattern?:string,matchType?:string} */
+    protected static function regexToSql(string $regex): array {
+        if (preg_match('#^/(?P<pattern>.*)/(?P<matchType>[im]*)$#', $regex, $matches)) {
+            return $matches;
+        }
+        return [];
+    }
 
-	// checking for duplicates
-		public function findDuplicateEntries(int $feedId): array {
-			$sql = <<<'SQL'
-		SELECT id, title, url, MD5(content) AS content_hash, COUNT(*) as duplicates
-		FROM `_entry`
-		WHERE id_feed = :feedId
-		GROUP BY url, title, content_hash
-		HAVING duplicates > 1;
-	SQL;
-
-			$stm = $this->pdo->prepare($sql);
-			$stm->bindParam(':feedId', $feedId, PDO::PARAM_INT);
-
-			if ($stm->execute()) {
-				return $stm->fetchAll(PDO::FETCH_ASSOC);
-			} else {
-				Minz_Log::error('SQL error ' . __METHOD__ . json_encode($stm->errorInfo()));
-				return [];
-			}
-		}
     /**
      * Find duplicate entries based on feed ID.
      */
@@ -115,42 +96,38 @@ class FreshRSS_EntryDAO extends Minz_ModelPdo {
             return false;
         }
     }
-}
-	/** @param array<int|string> $values */
-	protected static function sqlRegex(string $expression, string $regex, array &$values): string {
-		// The implementation of this function is solely for MySQL and MariaDB
-		static $databaseDAOMySQL = null;
-		if ($databaseDAOMySQL === null) {
-			$databaseDAOMySQL = new FreshRSS_DatabaseDAO();
-		}
 
-		$matches = static::regexToSql($regex);
-		if (isset($matches['pattern'])) {
-			$matchType = $matches['matchType'] ?? '';
-			if ($databaseDAOMySQL->isMariaDB()) {
-				if (str_contains($matchType, 'm')) {
-					// multiline mode
-					$matches['pattern'] = '(?m)' . $matches['pattern'];
-				}
-				if (str_contains($matchType, 'i')) {
-					// case-insensitive match
-					$matches['pattern'] = '(?i)' . $matches['pattern'];
-				} else {
-					$matches['pattern'] = '(?-i)' . $matches['pattern'];
-				}
-				$values[] = $matches['pattern'];
-				return "{$expression} REGEXP ?";
-			} else {	// MySQL
-				if (!str_contains($matchType, 'i')) {
-					// Case-sensitive matching
-					$matchType .= 'c';
-				}
-				$values[] = $matches['pattern'];
-				return "REGEXP_LIKE({$expression},?,'{$matchType}')";
-			}
-		}
-		return '';
-	}
+    /** @param array<int|string> $values */
+    protected static function sqlRegex(string $expression, string $regex, array &$values): string {
+        static $databaseDAOMySQL = null;
+        if ($databaseDAOMySQL === null) {
+            $databaseDAOMySQL = new FreshRSS_DatabaseDAO();
+        }
+
+        $matches = static::regexToSql($regex);
+        if (isset($matches['pattern'])) {
+            $matchType = $matches['matchType'] ?? '';
+            if ($databaseDAOMySQL->isMariaDB()) {
+                if (str_contains($matchType, 'm')) {
+                    $matches['pattern'] = '(?m)' . $matches['pattern'];
+                }
+                if (str_contains($matchType, 'i')) {
+                    $matches['pattern'] = '(?i)' . $matches['pattern'];
+                } else {
+                    $matches['pattern'] = '(?-i)' . $matches['pattern'];
+                }
+                $values[] = $matches['pattern'];
+                return "{$expression} REGEXP ?";
+            } else {
+                if (!str_contains($matchType, 'i')) {
+                    $matchType .= 'c';
+                }
+                $values[] = $matches['pattern'];
+                return "REGEXP_LIKE({$expression},?,'{$matchType}')";
+            }
+        }
+        return '';
+    }
 
 	/** Register any needed SQL function for the query, e.g. application-defined functions for SQLite */
 	protected function registerSqlFunctions(string $sql): void {
