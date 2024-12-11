@@ -9,7 +9,7 @@ require_once(LIB_PATH . '/lib_date.php');
  * It allows to extract meaningful bits of the search and store them in a
  * convenient object
  */
-class FreshRSS_Search {
+class FreshRSS_Search implements \Stringable {
 
 	/**
 	 * This contains the user input string
@@ -94,7 +94,7 @@ class FreshRSS_Search {
 	public function __construct(string $input) {
 		$input = self::cleanSearch($input);
 		$input = self::unescape($input);
-		$input = FreshRSS_BooleanSearch::unescapeRegexParentheses($input);
+		$input = FreshRSS_BooleanSearch::unescapeLiteralParentheses($input);
 		$this->raw_input = $input;
 
 		$input = $this->parseNotEntryIds($input);
