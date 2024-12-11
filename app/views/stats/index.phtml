@@ -159,37 +159,41 @@ $entryColors = array_map(fn($label) => $colorMap[$label], $entryLabels);
 $entryValues = array_values($entryData);
 ?>
 
-		<div class="stat half">
-			<h2><?= _t('admin.stats.feed_per_category') ?></h2>
-			<div>
-				<canvas id="statsFeedsPerCategory"></canvas>
-				<script class="jsonData-stats" type="application/json">
-				<?php
-				echo json_encode(array(
-					'canvasID' 		=> 'statsFeedsPerCategory',
-					'charttype' 	=> 'doughnut',
-					'data' 			=> $this->feedByCategory['data'],
-					'labels' 		=> $this->feedByCategory['label'],
-				), JSON_UNESCAPED_UNICODE);
-				?></script>
-			</div>
-		</div>
+<div class="stat half">
+    <h2><?= _t('admin.stats.feed_per_category') ?></h2>
+    <div>
+        <canvas id="statsFeedsPerCategory"></canvas>
+        <script class="jsonData-stats" type="application/json">
+        <?= json_encode([
+            'canvasID' => 'statsFeedsPerCategory',
+            'charttype' => 'doughnut',
+            'data' => $feedValues,
+            'labels' => $feedLabels,
+            'backgroundColor' => $feedColors,
+        ], JSON_UNESCAPED_UNICODE); ?>
+        </script>
+    </div>
+</div>
 
-		<div class="stat half">
-			<h2><?= _t('admin.stats.entry_per_category') ?></h2>
-			<div>
-				<canvas id="statsEntriesPerCategory"></canvas>
-				<script class="jsonData-stats" type="application/json">
-				<?php
-				echo json_encode(array(
-					'canvasID' 		=> 'statsEntriesPerCategory',
-					'charttype' 	=> 'doughnut',
-					'data' 			=> $this->entryByCategory['data'],
-					'labels' 		=> $this->entryByCategory['label'],
-				), JSON_UNESCAPED_UNICODE);
-				?></script>
-			</div>
-		</div>
+<div class="stat half">
+    <h2><?= _t('admin.stats.entry_per_category') ?></h2>
+    <div>
+        <canvas id="statsEntriesPerCategory"></canvas>
+        <script class="jsonData-stats" type="application/json">
+            <?= json_encode([
+                'canvasID' => 'statsEntriesPerCategory',
+                'charttype' => 'doughnut',
+                'data' => $entryValues,
+                'labels' => $entryLabels,
+                'backgroundColor' => $entryColors,
+                ], JSON_UNESCAPED_UNICODE); ?>
+                </script>
+            </div>
+        </div>  
+    </div>
+</main>
+
+<script src="../scripts/statsWithChartjs.js?<?= @filemtime(PUBLIC_PATH . '/scripts/statsWithChartjs.js') ?>"></script>
 	</div>
 </main>
 
