@@ -68,7 +68,7 @@
 								<td class="numeric"><?= format_number($feed['count']) ?></td>
 								<td class="numeric"><?php
 									if (!empty($this->repartitions['all_feeds']['total'])) {
-										echo format_number($feed['count'] / $this->repartitions['all_feeds']['total'] * 100, 1);
+									echo format_number($feed['count'] / $this->repartitions['all_feeds']['total'] * 100, 1);
 									}
 								?></td>
 							</tr>
@@ -98,35 +98,36 @@
 		
 		<?php
 // Function to generate a color palette
-function generateColorPalette($count) {
-    $colors = [];
-    for ($i = 0; $i < $count; $i++) {
-        // Generate visually distinct colors using HSV to RGB conversion
-        $hue = ($i / $count) * 360; // Distribute colors evenly around the color wheel
-        $saturation = 70; // Fixed saturation
-        $lightness = 50; // Fixed lightness
-        $colors[] = hslToHex($hue, $saturation, $lightness);
-    }
-    return $colors;
+/**
+ * Generate a color palette.
+ *
+ * @param int $count The number of colors to generate.
+ * @return array<int, string> An array of hex color codes.
+ */
+function generateColorPalette(int $count): array {
+			$colors = [];
+			for ($i = 0; $i < $count; $i++) {
+				// Generate visually distinct colors using HSV to RGB conversion
+				$hue = ($i / $count) * 360; // Distribute colors evenly around the color wheel
+				$saturation = 70; // Fixed saturation
+				$lightness = 50; // Fixed lightness
+				$colors[] = hslToHex($hue, $saturation, $lightness);
+					}
+			return $colors;
 }
 
 // Helper function: Convert HSL to HEX
-function hslToHex($h, $s, $l) {
-    $s /= 100;
-    $l /= 100;
-    $c = (1 - abs(2 * $l - 1)) * $s;
-    $x = $c * (1 - abs(fmod($h / 60, 2) - 1));
-    $m = $l - $c / 2;
-    if ($h < 60) { $r = $c; $g = $x; $b = 0; }
-    else if ($h < 120) { $r = $x; $g = $c; $b = 0; }
-    else if ($h < 180) { $r = 0; $g = $c; $b = $x; }
-    else if ($h < 240) { $r = 0; $g = $x; $b = $c; }
-    else if ($h < 300) { $r = $x; $g = 0; $b = $c; }
-    else { $r = $c; $g = 0; $b = $x; }
-    $r = dechex((int)(($r + $m) * 255));
-    $g = dechex((int)(($g + $m) * 255));
-    $b = dechex((int)(($b + $m) * 255));
-    return sprintf("#%02s%02s%02s", $r, $g, $b);
+function hslToHex(float $h, float $s, float $l): string {
+			$s /= 100;
+			$l /= 100;
+			$c = (1 - abs(2 * $l - 1)) * $s;
+			$x = $c * (1 - abs(fmod($h / 60, 2) - 1));
+			$m = $l - $c / 2;
+			if ($h < 60) { $r = $c; $g = $x; $b = 0; } elseif ($h < 120) { $r = $x; $g = $c; $b = 0; } elseif ($h < 180) { $r = 0; $g = $c; $b = $x; } elseif ($h < 240) { $r = 0; $g = $x; $b = $c; } elseif ($h < 300) { $r = $x; $g = 0; $b = $c; } else { $r = $c; $g = 0; $b = $x; }
+			$r = dechex((int)(($r + $m) * 255));
+			$g = dechex((int)(($g + $m) * 255));
+			$b = dechex((int)(($b + $m) * 255));
+			return sprintf("#%02s%02s%02s", $r, $g, $b);
 }
 
 // 1. Get all unique category labels and sort them
@@ -142,11 +143,11 @@ $colorMap = array_combine($allLabels, $colorPalette);
 // 4. Align data and labels for both charts
 $feedData = array_fill_keys($allLabels, 0); // Initialize data with all categories
 foreach ($this->feedByCategory['label'] as $index => $label) {
-    $feedData[$label] = $this->feedByCategory['data'][$index];
+			$feedData[$label] = $this->feedByCategory['data'][$index];
 }
 $entryData = array_fill_keys($allLabels, 0); // Initialize data with all categories
 foreach ($this->entryByCategory['label'] as $index => $label) {
-    $entryData[$label] = $this->entryByCategory['data'][$index];
+			$entryData[$label] = $this->entryByCategory['data'][$index];
 }
 
 // Final data and labels
@@ -160,37 +161,37 @@ $entryValues = array_values($entryData);
 ?>
 
 <div class="stat half">
-    <h2><?= _t('admin.stats.feed_per_category') ?></h2>
-    <div>
-        <canvas id="statsFeedsPerCategory"></canvas>
-        <script class="jsonData-stats" type="application/json">
-        <?= json_encode([
-            'canvasID' => 'statsFeedsPerCategory',
-            'charttype' => 'doughnut',
-            'data' => $feedValues,
-            'labels' => $feedLabels,
-            'backgroundColor' => $feedColors,
-        ], JSON_UNESCAPED_UNICODE); ?>
-        </script>
-    </div>
+	<h2><?= _t('admin.stats.feed_per_category') ?></h2>
+	<div>
+		<canvas id="statsFeedsPerCategory"></canvas>
+		<script class="jsonData-stats" type="application/json">
+		<?= json_encode([
+			'canvasID' => 'statsFeedsPerCategory',
+			'charttype' => 'doughnut',
+			'data' => $feedValues,
+			'labels' => $feedLabels,
+			'backgroundColor' => $feedColors,
+		], JSON_UNESCAPED_UNICODE); ?>
+		</script>
+	</div>
 </div>
 
 <div class="stat half">
-    <h2><?= _t('admin.stats.entry_per_category') ?></h2>
-    <div>
-        <canvas id="statsEntriesPerCategory"></canvas>
-        <script class="jsonData-stats" type="application/json">
-            <?= json_encode([
-                'canvasID' => 'statsEntriesPerCategory',
-                'charttype' => 'doughnut',
-                'data' => $entryValues,
-                'labels' => $entryLabels,
-                'backgroundColor' => $entryColors,
-                ], JSON_UNESCAPED_UNICODE); ?>
-                </script>
-            </div>
-        </div>  
-    </div>
+	<h2><?= _t('admin.stats.entry_per_category') ?></h2>
+	<div>
+		<canvas id="statsEntriesPerCategory"></canvas>
+		<script class="jsonData-stats" type="application/json">
+			<?= json_encode([
+				'canvasID' => 'statsEntriesPerCategory',
+				'charttype' => 'doughnut',
+				'data' => $entryValues,
+				'labels' => $entryLabels,
+				'backgroundColor' => $entryColors,
+				], JSON_UNESCAPED_UNICODE); ?>
+				</script>
+			</div>
+		</div>  
+	</div>
 </main>
 
-<script src="../scripts/statsWithChartjs.js?<?= @filemtime(PUBLIC_PATH . '/scripts/statsWithChartjs.js') ?>"></script>
+<script src="../scripts/statsWithChartjs.js?<?= @filemtime(PUBLIC_PATH . '/scripts/statsWithChartjs.js') ?>"></script>  
