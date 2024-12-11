@@ -229,6 +229,7 @@ return array(
 		'pocket' => 'Pocket',	// TODO
 		'print' => 'Print',	// TODO
 		'raindrop' => 'Raindrop.io',	// TODO
+		'readeck' => 'Readeck', 
 		'reddit' => 'Reddit',	// TODO
 		'shaarli' => 'Shaarli',	// TODO
 		'telegram' => 'Telegram',	// IGNORE
