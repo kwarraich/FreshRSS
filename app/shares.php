@@ -184,10 +184,10 @@ return [
 		'method' => 'GET',
 	],
 	'readeck' => [
-    'url' => '~URL~/bookmarks?url=~LINK~',  
-    'transform' => ['rawurlencode'],  
-    'form' => 'advanced',  
-    'method' => 'POST',  
+		'url' => '~URL~/api/bookmarks?url=~LINK~',  
+		'transform' => array(),  
+		'form' => 'advanced',  
+		'method' => 'POST',  
 	],
 	'reddit' => [
 		'url' => 'https://www.reddit.com/submit?url=~LINK~',
