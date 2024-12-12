@@ -267,11 +267,15 @@ class FreshRSS_FeedDAO extends Minz_ModelPdo {
 
 	/**
 	 * @param bool|null $muted to include only muted feeds
+	 * @param bool|null $errored to include only errored feeds
 	 */
-	public function deleteFeedByCategory(int $id, ?bool $muted = null): int|false {
+	public function deleteFeedByCategory(int $id, ?bool $muted = null, ?bool $errored = null): int|false {
 		$sql = 'DELETE FROM `_feed` WHERE category=?';
 		if ($muted) {
 			$sql .= ' AND ttl < 0';
+		}
+		if ($errored) {
+			$sql .= ' AND error <> 0';
 		}
 		$stm = $this->pdo->prepare($sql);
 
@@ -406,12 +410,16 @@ SQL;
 
 	/**
 	 * @param bool|null $muted to include only muted feeds
+	 * @param bool|null $errored to include only errored feeds
 	 * @return array<int,FreshRSS_Feed>
 	 */
-	public function listByCategory(int $cat, ?bool $muted = null): array {
+	public function listByCategory(int $cat, ?bool $muted = null, ?bool $errored = null): array {
 		$sql = 'SELECT * FROM `_feed` WHERE category=:category';
 		if ($muted) {
 			$sql .= ' AND ttl < 0';
+		}
+		if ($errored) {
+			$sql .= ' AND error <> 0';
 		}
 		$res = $this->fetchAssoc($sql, [':category' => $cat]);
 		if ($res == null) {
@@ -424,9 +432,7 @@ SQL;
 		 */
 		$feeds = self::daoToFeeds($res);
 
-		uasort($feeds, static function (FreshRSS_Feed $a, FreshRSS_Feed $b) {
-			return strnatcasecmp($a->name(), $b->name());
-		});
+		uasort($feeds, static fn(FreshRSS_Feed $a, FreshRSS_Feed $b) => strnatcasecmp($a->name(), $b->name()));
 
 		return $feeds;
 	}
