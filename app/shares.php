@@ -116,6 +116,25 @@ return [
 		'form' => 'advanced',
 		'method' => 'GET',
 	],
+	'linkace' => [
+    'url' => 'https://your-linkace-url.com/api/v1/links',
+    'transform' => ['rawurlencode'],
+    'help' => 'https://api-docs.linkace.org/', // Link to the API documentation
+    'form' => 'advanced',
+    'method' => 'POST',
+    'headers' => [
+        'accept' => 'application/json',
+        'Content-Type' => 'application/json',
+        'authorization' => 'Bearer zeGEaJtcVj4Em2E9sZUwaHRITcBA5XKk'
+    ],
+    'data' => [
+        'url' => '{url}', // URL of the bookmark to be added
+        'title' => '{title}', // Title of the page
+        'is_private' => false, // Optional: set to true if the link should be private
+        'tags' => [], // Optional: an array of tag IDs
+        'lists' => [] // Optional: an array of list IDs
+    ]
+	],
 	'linkding' => [
 		'url' => '~URL~/bookmarks/new?url=~LINK~&title=~TITLE~&auto_close',
 		'transform' => ['rawurlencode'],
