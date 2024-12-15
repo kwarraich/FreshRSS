@@ -185,7 +185,7 @@ return [
 	],
 	'readeck' => [
 		'url' => '~URL~/api/bookmarks?url=~LINK~',  
-		'transform' => array(),  
+		'transform' => [],  
 		'form' => 'advanced',  
 		'method' => 'POST',  
 	],
