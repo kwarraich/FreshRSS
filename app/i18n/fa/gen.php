@@ -229,7 +229,7 @@ return array(
 		'pocket' => ' جیبی',
 		'print' => ' چاپ',
 		'raindrop' => ' Raindrop.io',
-		'readeck' => 'Readeck',
+		'readeck' => 'Readeck', // IGNORE
 		'reddit' => ' Reddit',
 		'shaarli' => ' شعرلی',
 		'telegram' => 'Telegram',	// IGNORE
